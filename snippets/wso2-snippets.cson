@@ -1,0 +1,117 @@
+'.text':
+  'payload':
+    'prefix': 'pay'
+    'body': """
+      <payloadFactory media-type="${1:xml|json}">
+        <format>
+              $20
+        </format>
+        <args>
+          <arg evaluator="${30:xml|json}" ${31:value|expression}="$32"/>
+        </args>
+      </payloadFactory>
+      """,
+  'call':
+    'prefix': 'ca'
+    'body': """
+      <call${1: blocking="true"}>
+        <endpoint key="$20"/>
+      </call>
+    """,
+  'enqueue':
+    'prefix': 'enq'
+    'body': """
+      <enqueue xmlns="http://ws.apache.org/ns/synapse" executor="$1" priority="$2" sequence="$3" />
+    """,
+  'send':
+    'prefix': 'sen'
+    'body': """
+      <send>
+        <endpoint key="$1"/>
+      </send>
+    """,
+  'loopback':
+    'prefix': 'loo'
+    'body': """
+      <loopback/>
+    """,
+  'sequence':
+    'prefix': 'seq'
+    'body': """
+      <sequence key="$1"/>
+    """,
+  'event':
+    'prefix': 'eve'
+    'body': """
+      <event xmlns="http://ws.apache.org/ns/synapse" topic="$1" ${2:expression=""} />
+    """,
+  'drop':
+    'prefix': 'dro'
+    'body': """
+      <drop/>
+    """,
+  'call-template':
+    'prefix': 'cal'
+    'body': """
+      <call-template target="$1">
+        <with-param name="$20" value="$21" />
+      </call-template>
+    """,
+  'enrich':
+    'prefix': 'enr'
+    'body': """
+      <enrich>
+          <source ${1:clone="${2:true|false}"} ${3:type="${4:custom|envelope|body|property|inline}"} xpath="$5" property="$6" />
+          <target ${7:action="${8:replace|child|sibiling}"} ${9:type="${10:custom|envelope|body|property|inline}"} xpath="$11" property="$12" />
+      </enrich>
+    """,
+  'property':
+    'prefix': 'pro'
+    'body': """
+        <property name="$1" ${2:action="${3:set|remove}"} ${4:type="string"} ${5:value|expression}="$6" ${7:scope="${8:default|transport|axis2|axis2-client}"} ${9:pattern="regex" ${10:group="integer"}} />
+    """,
+  'log':
+    'prefix': 'log'
+    'body': """
+      <log ${1:level="${2:Full|Simple|Headers|Custom}"} ${3:separator="string"}>
+         <property name="$10" ${11:value|expression}="$12" />
+      </log>
+    """,
+  'logfull':
+    'prefix': 'full'
+    'body': """
+      <log level="full" />
+    """,
+  'filter':
+    'prefix': 'fil'
+    'body': """
+      <filter ${1:source="[XPath|json-eval(JSONPath)]" regex="string"} ${2:xpath="[XPath|json-eval(JSONPath)"}>
+         <then>
+         </then>
+         <else>
+         </else>
+      </filter>
+    """,
+  'in':
+    'prefix': 'in'
+    'body': """
+      <in>
+      </in>
+    """,
+  'out':
+    'prefix': 'out'
+    'body': """
+      <out>
+      </out>
+    """,
+  'validate':
+    'prefix': 'validate'
+    'body': """
+      <validate [source="xpath"]>
+         <property name="validation-feature-id" value="true|false"/>*
+         <schema key="string"/>+
+         <on-fail>
+
+         </on-fail>
+      </validate>
+    """
