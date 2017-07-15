@@ -1,5 +1,5 @@
 '.text':
-  'payload':
+  'payloadFactory':
     'prefix': 'pay'
     'body': """
       <payloadFactory media-type="${1:xml|json}">
@@ -96,22 +96,324 @@
     'prefix': 'in'
     'body': """
       <in>
+        $1
       </in>
     """,
   'out':
     'prefix': 'out'
     'body': """
       <out>
+        $1
       </out>
     """,
   'validate':
-    'prefix': 'validate'
+    'prefix': 'val'
     'body': """
       <validate [source="xpath"]>
          <property name="validation-feature-id" value="true|false"/>*
          <schema key="string"/>+
          <on-fail>
-
+            mediator+
          </on-fail>
       </validate>
+    """,
+  'switch':
+    'prefix': 'siw'
+    'body': """
+      <switch source="[XPath|json-eval(JSON Path)]">
+         <case regex="string">
+           mediator+
+         </case>+
+         <default>
+           mediator+
+         </default>?
+      </switch>
+    """,
+  'conditionalRouter':
+    'prefix': 'con'
+    'body': """
+      <conditionalRouter continueAfter="(true|false)">
+          <route breakRoute="(true|false)">
+            <condition ../>
+            <target ../>
+          </route>+
+      </conditionalRouter>
+    """,
+  'xslt':
+    'prefix': 'xslt'
+    'body': """
+      <xslt key="string" [source="xpath"]>
+           <property name="string" (value="literal" | expression="xpath")/>*
+           <feature name="string" value="true| false" />*
+           <resource location="string" key="string"/>*
+      </xslt>
+    """,
+  'rewrite':
+    'prefix': 'rew'
+    'body': """
+      <rewrite [inProperty="string"] [outProperty="string"]>
+          <rewriterule>
+              <condition>
+              ...
+              </condition>?
+              <action [type="append|prepend|replace|remove|set"] [value="string"]
+                [xpath="xpath"] [fragment="protocol|host|port|path|query|ref|user|full"] [regex="regex"]>+
+          </rewriterule>+
+      </rewrite>
+    """,
+  'xquery':
+    'prefix': 'xqu'
+    'body': """
+      <xquery key="string" [target="xpath"]>
+          <variable name="string" type="string" [key="string"] [expression="xpath"] [value="string"]/>?
+      </xquery>
+    """,
+  'header':
+    'prefix': 'head'
+    'body': """
+      <header name=”string” (value=”string|{property}” | expression=”xpath”) [scope=default|transport] [action=set|remove]/>
+    """,
+  'makefault':
+    'prefix': 'makefault'
+    'body': """
+      <makefault [version="soap11|soap12|pox"]>
+         <code (value="literal" | expression="xpath")/>
+         <reason (value="literal" | expression="xpath")>
+         <node>?
+         <role>?
+         <detail>?
+      </makefault>
+    """,
+  'cache':
+    'prefix': 'cache'
+    'body': """
+      <cache [id="string"] [hashGenerator="class"] [timeout="seconds"] [scope=(per-host | per-mediator)]
+           collector=(true | false) [maxMessageSize="in-bytes"]>
+         <onCacheHit [sequence="key"]>
+           (mediator)+
+         </onCacheHit>?
+         <implementation type=(memory | disk) maxSize="int"/>
+      </cache>
+    """,
+  'foreach':
+    'prefix': 'foreach'
+    'body': """
+      <for-each expression="xpath" [sequence="sequence_ref"] [id="foreach_id"] >
+          <sequence>
+            (mediator)+
+          </sequence>?
+      </for-each>
+    """,
+  'clone':
+    'prefix': 'clone'
+    'body': """
+      <clone [continueParent=(true | false)]>
+         <target [to="uri"] [soapAction="qname"] [sequence="sequence_ref"] [endpoint="endpoint_ref"]>
+           <sequence>
+             (mediator)+
+           </sequence>?
+           <endpoint>
+             endpoint
+           </endpoint>?
+         </target>+
+      </clone>
+    """,
+  'store':
+    'prefix': 'store'
+    'body': """
+      <axis2ns1:store xmlns:axis2ns1="http://ws.apache.org/ns/synapse" messageStore="$1" sequence="$2"></axis2ns1:store>
+    """,
+  'iterate':
+    'prefix': 'iterate'
+    'body': """
+      <iterate [sequential=(true | false)] [continueParent=(true | false)] [preservePayload=(true | false)] (attachPath="xpath")? expression="xpath">
+         <target [to="uri"] [soapAction="qname"] [sequence="sequence_ref"] [endpoint="endpoint_ref"]>
+           <sequence>
+             (mediator)+
+           </sequence>?
+           <endpoint>
+             endpoint
+           </endpoint>?
+         </target>+
+      </iterate>
+    """,
+  'aggregate':
+    'prefix': 'aggregate'
+    'body': """
+      <aggregate>
+         <correlateOn expression="xpath"/>?
+         <completeCondition [timeout="time-in-seconds"]>
+           <messageCount min="int-min" max="int-max"/>?
+         </completeCondition>?
+         <onComplete expression="xpath" [sequence="sequence-ref"]>
+           (mediator +)?
+         </onComplete>
+      </aggregate>
+    """,
+  'callout':
+    'prefix': 'callout'
+    'body': """
+      <callout [serviceURL="string"] [action="string"] [initAxis2ClientOptions="true|false"] [endpointKey="string"]>
+            <configuration [axis2xml="string"] [repository="string"]/>?
+            <source xpath="expression" | key="string" | type="envelope"/>
+            <target xpath="expression" | key="string"/>
+            <enableSec policy="string" | outboundPolicy="String" | inboundPolicy="String" />?
+      </callout>
+    """,
+  'transaction':
+    'prefix': 'transaction'
+    'body': """
+      <syn:transaction action="commit|fault-if-no-tx|new|resume|suspend|rollback|use-existing-or-new" />
+    """,
+  'throttle':
+    'prefix': 'throttle'
+    'body': """
+      <throttle [onReject="string"] [onAccept="string"] id="string">
+          (<policy key="string"/> | <policy>..</policy>)
+          <onReject>..</onReject>?
+          <onAccept>..</onAccept>?
+      </throttle>
+    """,
+  'dbreport':
+    'prefix': 'dbreport'
+    'body': """
+      <dbreport>
+         <connection>
+            <pool>
+              <dsName/>
+              <icClass/>
+              <url/>
+              <user/>
+              <password/>
+              <property name="name" value="value"/>*
+            </pool>
+         </connection>
+         <statement>
+            <sql>select something from table where something_else = ?</sql>
+            <parameter [value="" | expression=""] type="CHAR|VARCHAR|LONGVARCHAR|NUMERIC|DECIMAL|BIT|TINYINT|SMALLINT|INTEGER|BIGINT|REAL|FLOAT|DOUBLE|DATE|TIME|TIMESTAMP"/>*
+         </statement>+
+      </dbreport>
+    """,
+  'dblookup':
+    'prefix': 'dblookup'
+    'body': """
+      <dblookup>
+         <connection>
+            <pool>
+              <driver/>
+              <url/>
+              <user/>
+              <password/>
+              <property name="name" value="value"/>*
+            </pool>
+         </connection>
+         <statement>
+            <sql>select something from table where something_else = ?</sql>
+            <parameter [value="" | expression=""] type="CHAR|VARCHAR|LONGVARCHAR|NUMERIC|DECIMAL|BIT|TINYINT|SMALLINT|INTEGER|BIGINT|REAL|FLOAT|DOUBLE|DATE|TIME|TIMESTAMP"/>*
+            <result name="string" column="int|string"/>*
+         </statement>+
+      </dblookup>
+    """,
+  'ejb':
+    'prefix': 'ejb'
+    'body': """
+      <ejb beanstalk="string" class="string" [sessionId="string"] [remove="true | false"]
+        [method="string"] [target="string | {xpath}"] [jndiName="string"] />
+          <args>
+            <arg (value="string | {xpath}")/>*
+          </args>
+      </ejb>
+    """,
+  'rule':
+    'prefix': 'rule'
+    'body': """
+      <rule>
+        <ruleset>
+            <source [ key="xs:string" ]>
+                [ in-Lined ]
+            </source>
+            <creation>
+                <property name="xs:string" value="xs:string"/>*
+            </creation>
+        </ruleset>
+        <session type="[stateless|stateful]"/>*
+        <facts>
+            <fact name="xs:string" type="xs:string" expression="xs:string" value="xs:string"/>+
+        </facts>
+        <results>
+            <result name="xs:string" type="xs:string" expression="xs:string" value="xs:string"/>*
+        </results>
+        [ <childMediators>
+            <mediator/>*
+          </childMediators> ]
+      </rule>
+    """,
+  'entitlementService':
+    'prefix': 'entitlementService'
+    'body': """
+      <entitlementService remoteServiceUrl="" remoteServiceUserName="" remoteServicePassword="" callbackClass="org.wso2.carbon.identity.entitlement.mediator.callback.[UTEntitlementCallbackHandler|X509EntitlementCallbackHandler|SAMLEntitlementCallbackHandler|KerberosEntitlementCallbackHandler]"
+      client="soap|basicAuth|thrift|wsXacml">
+         <onReject/>
+         <onAccept/>
+         <advice/>
+         <obligations/>
+      </entitlementService>
+    """,
+  'oauthService':
+    'prefix': 'oauthService'
+    'body': """
+      <oauthService remoteServiceUrl="" username="" password=""/>
+    """,
+  'smooks':
+    'prefix': 'smooks'
+    'body': """
+      <smooks [config-key="string"]>
+         <input [type="|text|xml"]/>
+         <output [type="|text|xml|java"] [property="string"] [action="string"]/>
+      </smooks>
+    """,
+  'bean':
+    'prefix': 'bean'
+    'body': """
+      <bean action="CREATE | REMOVE | SET_PROPERTY | GET_PROPERTY" var="string" [class="string"] [property="string"] [value="string | {xpath}"] />
+    """,
+  'class':
+    'prefix': 'class'
+    'body': """
+      <class name="class-name">
+       <property name="string" value="literal">
+       </property>
+     </class>
+    """,
+  'pojoCommand':
+    'prefix': 'pojoCommand'
+    'body': """
+      <pojoCommand name="class-name">
+       (
+       <property name="string" value="string"/> |
+       <property name="string" context-name="literal" [action=(ReadContext | UpdateContext | ReadAndUpdateContext)]>
+        (either literal or XML child)
+       </property> |
+       <property name="string" expression="xpath" [action=(ReadMessage | UpdateMessage | ReadAndUpdateMessage)]/>
+       ) *
+     </pojoCommand>
+    """,
+  'script':
+    'prefix': 'script'
+    'body': """
+      <script language="js"><![CDATA[...script source code...]]><script/>
+    """,
+  'spring':
+    'prefix': 'spring'
+    'body': """
+      <spring:spring bean="exampleBean" key="string"/>
+    """,
+  'bam':
+    'prefix': 'bam'
+    'body': """
+      <bam xmlns="http://ws.apache.org/ns/synapse">
+         <serverProfile name="string">
+            <streamConfig name="string" version="string"></streamConfig>
+         </serverProfile>
+      </bam>
     """
